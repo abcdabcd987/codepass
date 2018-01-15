@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+
+<h1>Login</h1>
+<hr>
+
+<form method="post">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.username, placeholder="Username") }}
+  {{ render_field(form.password, placeholder="Enter Password") }}
+  <button type="submit" class="btn btn-primary">Login</button>
+</form>
+
+{% endblock %}

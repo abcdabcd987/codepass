@@ -1,0 +1,3 @@
+graft codepass_web/templates
+graft codepass_web/static
+include requirements.txt

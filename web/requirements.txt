@@ -1,0 +1,9 @@
+pytest==3.3.2
+pytz==2017.3
+WTForms==2.1
+Flask_WTF==0.14.2
+SQLAlchemy==1.2.0
+setuptools==36.5.0
+Flask==0.12.2
+Flask_SQLAlchemy==2.3.2
+psycopg2==2.7.3.2

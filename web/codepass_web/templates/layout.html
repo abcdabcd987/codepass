@@ -1,0 +1,82 @@
+{% from "_form_helper.html" import render_field %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{% block title %}{% endblock %} - {{ config.WEBSITE_NAME }}</title>
+  <link href="{{ url_for('static', filename='bootstrap-4.0.0-beta.3-dist/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='open-iconic-1.1.1/font/css/open-iconic-bootstrap.min.css') }}"
+        rel="stylesheet">
+  <link href="{{ url_for('static', filename='layout.css') }}?v=20180112" rel="stylesheet">
+</head>
+<body>
+<!-- Fixed navbar -->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+  <a class="navbar-brand" href="{{ url_for('homepage.get_homepage') }}">{{ config.WEBSITE_NAME }}</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+          aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+    <ul class="navbar-nav mr-auto">
+      <!--<li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#">Disabled</a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">Dropdown</a>
+        <div class="dropdown-menu" aria-labelledby="dropdown01">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </li>-->
+    </ul>
+    <ul class="navbar-nav">
+      {% if 'user_id' in session %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"><span class="oi oi-person"
+                                                                                    aria-hidden="true"></span>
+            {{ session['user_username'] }}
+          </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="{{ url_for('user.get_logout') }}">Logout</a>
+          </div>
+        </li>
+      {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.get_login') }}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.get_register') }}">Register</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+<main role="main" class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+          {{ message | safe }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='jquery-3.2.1/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap-4.0.0-beta.3-dist/js/bootstrap.bundle.min.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
+

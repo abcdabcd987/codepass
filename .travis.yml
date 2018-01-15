@@ -1,0 +1,15 @@
+dist: trusty
+sudo: false
+language: python
+python:
+  - "3.6"
+install:
+  - cd web
+  - pip3 install -e .
+  - pip3 install pytest-cov
+script:
+  - cd web
+  - pytest --cov
+after_success:
+  - cd web
+  - coveralls

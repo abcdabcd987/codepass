@@ -1,0 +1,28 @@
+TODO
+==========
+
+- user list that can be imported to a contest in batch
+- specify users for a contest
+- allow users to join a contest
+- user profile settings
+    - optional information
+    - optional information can be set to be required
+    - timezone
+- per testcase limit
+- problem tags
+- download testcase(s)
+- show scores for acm practice might have negative training effects
+- additional files for testcases
+- permission control
+- FPS format
+- CSRF
+- options to not to use email to login
+- send email
+- user password hash
+- user register email verification
+- problem archive metadata text search index
+- event log
+    - user
+        - login
+        - register
+        - update profile

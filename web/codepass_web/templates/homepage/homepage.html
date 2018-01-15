@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Homepage{% endblock %}
+{% block content %}
+
+  <pre>{%- for key in session -%}{{ key }}: {{ session[key] }}{{ '\n' }}{%- endfor -%}</pre>
+  <ul>
+    <li><a href="{{ url_for('user.get_login') }}">Login</a></li>
+    <li><a href="{{ url_for('user.get_register') }}">Register</a></li>
+    <li><a href="{{ url_for('user.get_logout') }}">Logout</a></li>
+  </ul>
+
+{% endblock %}
