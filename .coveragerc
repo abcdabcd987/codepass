@@ -1,3 +1,5 @@
 [report]
 omit =
     */python?.?/*
+    */test/*
+    */setup.py

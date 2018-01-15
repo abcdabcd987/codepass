@@ -7,7 +7,7 @@ def guest_required(f):
     @functools.wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' in session:
-            flash('You have already logged in.', 'danger')
+            flash(constants.TextUserAlreadyLoggedIn, 'danger')
             return redirect(url_for('homepage.get_homepage'))
         return f(*args, **kwargs)
 
@@ -40,23 +40,24 @@ def post_login():
             break
         user = db.session.query(User).filter(User.username == form.username.data).first()
         if not user:
-            flash('Incorrect combination of username and password.', 'danger')
+            flash(constants.TextUserWrongPassword, 'danger')
             break
         if user.password != form.password.data:
-            flash('Incorrect combination of username and password.', 'danger')
+            flash(constants.TextUserWrongPassword, 'danger')
             break
 
         set_session_login(user)
-        flash('Successfully registered', 'success')
+        flash(constants.TextUserLoginSuccess, 'success')
         return redirect(url_for('homepage.get_homepage'))
 
     return render_template('user/login.html', form=form)
 
 
 class RegisterForm(FlaskForm):
-    username = StringField('Username', [InputRequired()])
-    password = PasswordField('Password', [InputRequired()])
-    confirm = PasswordField('Confirm', [InputRequired(), EqualTo('password', 'Passwords must match.')])
+    username = StringField('Username', [InputRequired(constants.TextInputRequired)])
+    password = PasswordField('Password', [InputRequired(constants.TextInputRequired)])
+    confirm = PasswordField('Confirm', [InputRequired(constants.TextInputRequired),
+                                        EqualTo('password', constants.TextPasswordMismatch)])
 
 
 @mod.route('/register')
@@ -81,12 +82,12 @@ def post_register():
             db.session.add(user)
             db.session.commit()
         except IntegrityError:
-            flash('The username has been occupied. Please try another one.', 'warning')
+            flash(constants.TextUserUsernameOccupied, 'warning')
             break
 
         user = db.session.query(User).filter(User.username == form.username.data).one()
         set_session_login(user)
-        flash('Successfully registered', 'success')
+        flash(constants.TextUserRegisterSuccess, 'success')
         return redirect(url_for('homepage.get_homepage'))
 
     return render_template('user/register.html', form=form)
@@ -95,5 +96,5 @@ def post_register():
 @mod.route('/logout')
 def get_logout():
     session.clear()
-    flash('You have logged out.', 'success')
+    flash(constants.TextUserLogout, 'success')
     return redirect(url_for('homepage.get_homepage'))

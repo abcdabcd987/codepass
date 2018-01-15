@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, InputRequired, EqualTo
 from sqlalchemy.exc import IntegrityError
 from ..models import *
+from .. import constants
 
 
 def login_required(f):

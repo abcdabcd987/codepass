@@ -21,6 +21,7 @@ TODO
 - user password hash
 - user register email verification
 - problem archive metadata text search index
+- limit login frequency
 - event log
     - user
         - login
