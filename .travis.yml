@@ -4,12 +4,10 @@ language: python
 python:
   - "3.6"
 install:
-  - cd web
-  - pip3 install -e .
+  - pip3 install -e web
   - pip3 install pytest-cov
+  - pip3 install coveralls
 script:
-  - cd web
-  - pytest --cov
+  - pytest --cov web
 after_success:
-  - cd web
   - coveralls
