@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}{{ archive.json.title }}{% endblock %}
+{% macro render_fields(fields, json) %}
+  {% for field in fields if field.key in json %}
+    {% set value = json[field.key] %}
+    {% if field.type == 'combo' %}
+      {{ render_fields(field.content, value) }}
+    {% elif field.key == 'title' %}
+      <h1>{{ value }}</h1>
+    {% elif field.type in ['string', 'int'] %}
+      <pre>{{ field.title }}: {{ value }}</pre>
+    {% elif field.type == 'code' %}
+      <h3>{{ field.title }}</h3>
+      <pre>{{ value }}</pre>
+    {% elif field.type == 'markdown' %}
+      <h3>{{ field.title }}</h3>
+      {{ value | markdown | safe }}
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+{% block content %}
+  <pre>{{ archive.json }}</pre>
+  {{ render_fields(config.WEB.PROBLEM_FORMAT, archive.json) }}
+{% endblock %}

@@ -1,6 +1,21 @@
+import json
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
+
+class JSONEncodedDict(db.TypeDecorator):
+    impl = db.Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 class User(db.Model):
@@ -30,18 +45,8 @@ class ProblemArchive(db.Model):
     __tablename__ = 'problem_archives'
     id = db.Column(db.Integer, primary_key=True)
     problem_id = db.Column(db.Integer, db.ForeignKey('problems.id'), nullable=False, index=True)
-    title = db.Column(db.String, index=True)  # cache
-    author = db.Column(db.String, index=True)  # cache
-    source = db.Column(db.String, index=True)  # cache
-    json = db.Column(db.Text)
-    time_limit = db.Column(db.Integer)
-    memory_limit = db.Column(db.Integer)
-    description = db.Column(db.Text)
-    input_format = db.Column(db.Text)
-    output_format = db.Column(db.Text)
-    samples = db.Column(db.Text)  # [{'input': 'text', 'output': 'text', 'explanation': 'text'}, ...]
-    hints = db.Column(db.Text)
-    checker_id = db.Column(db.Integer, db.ForeignKey('checkers.id'), nullable=False)
+    json = db.Column(JSONEncodedDict)
+    checker_id = db.Column(db.Integer, db.ForeignKey('checkers.id'))
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.TIMESTAMP, nullable=False)
 
@@ -95,5 +100,6 @@ class Submission(db.Model):
     dispatched_to = db.Column(db.String)  # judger name
     dispatched_at = db.Column(db.TIMESTAMP)
     compile_info = db.Column(db.Text)
-    result = db.Column(db.Text)  # [{'testcase_id', 'time', 'memory', 'exitcode', 'verdict', 'checker_info', 'text'}, ...]
+    result = db.Column(JSONEncodedDict)
+    # [{'testcase_id', 'time', 'memory', 'exitcode', 'verdict', 'checker_info', 'text'}, ...]
     completed_at = db.Column(db.TIMESTAMP)

@@ -1,5 +1,6 @@
-[report]
+[run]
+branch = True
 omit =
-    */python?.?/*
+    */python*.*/*
     */test/*
     */setup.py

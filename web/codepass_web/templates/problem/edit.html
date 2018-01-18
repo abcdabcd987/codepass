@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}{{ _edit_page_title }}{% endblock %}
+{% macro render_fields(fields, path) %}
+  {% for field in fields %}
+    {% if field.type == 'combo' %}
+      {{ render_fields(field.content, path + field.key + '.') }}
+    {% else %}
+      <div class="form-group row">
+        <label for="{{ path }}{{ field.key }}" class="col-sm-2 col-form-label">{{ field.title }}</label>
+        <div class="col-sm-7">
+          {% if field.type == 'string' %}
+            <input type="text" id="{{ path }}{{ field.key }}" name="{{ path }}{{ field.key }}" class="form-control">
+          {% elif field.type == 'int' %}
+            <input type="number" id="{{ path }}{{ field.key }}" name="{{ path }}{{ field.key }}"
+                   class="form-control monospace">
+          {% elif field.type == 'markdown' %}
+            <textarea id="{{ path }}{{ field.key }}" name="{{ path }}{{ field.key }}"
+                      class="form-control monospace"></textarea>
+          {% elif field.type == 'code' %}
+            <textarea id="{{ path }}{{ field.key }}" name="{{ path }}{{ field.key }}"
+                      class="form-control monospace"></textarea>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+{% block content %}
+
+  <h1>{{ _edit_page_header }}</h1>
+  <hr>
+
+  <form method="post" action="{{ url_for("problem.post_save") }}">
+    {{ form.hidden_tag() }}
+    {{ render_fields(config.WEB.PROBLEM_FORMAT, '') }}
+
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+
+{% endblock %}

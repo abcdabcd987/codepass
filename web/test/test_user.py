@@ -1,6 +1,3 @@
-from codepass_web import constants
-
-
 def register(client, username, password, confirm):
     return client.post('/user/register', data=dict(
         username=username,
@@ -27,35 +24,35 @@ def test_get_register(client):
 
 def test_register(client):
     rv = register(client, 'user1', 'pass1', '')
-    assert constants.TextInputRequired in rv.get_data(as_text=True)
+    assert 'This field is required.' in rv.get_data(as_text=True)
 
     rv = register(client, 'user1', '', 'pass1')
-    assert constants.TextInputRequired in rv.get_data(as_text=True)
+    assert 'This field is required.' in rv.get_data(as_text=True)
 
     rv = register(client, 'user1', 'pass1', 'pass2')
-    assert constants.TextPasswordMismatch in rv.get_data(as_text=True)
+    assert 'Passwords must match.' in rv.get_data(as_text=True)
 
     rv = register(client, 'user1', 'pass1', 'pass1')
-    assert constants.TextUserRegisterSuccess in rv.get_data(as_text=True)
+    assert 'Successfully registered.' in rv.get_data(as_text=True)
 
 
 def test_register_disallows_for_logged_in_users(client):
     rv = register(client, 'user1', 'pass1', 'pass1')
-    assert constants.TextUserRegisterSuccess in rv.get_data(as_text=True)
+    assert 'Successfully registered.' in rv.get_data(as_text=True)
 
     rv = register(client, 'user2', 'pass2', 'pass2')
-    assert constants.TextUserAlreadyLoggedIn in rv.get_data(as_text=True)
+    assert 'You have already logged in.' in rv.get_data(as_text=True)
 
 
 def test_register_enforces_unique_username(client):
     rv = register(client, 'user1', 'pass1', 'pass1')
-    assert constants.TextUserRegisterSuccess in rv.get_data(as_text=True)
+    assert 'Successfully registered.' in rv.get_data(as_text=True)
 
     rv = logout(client)
-    assert constants.TextUserLogout in rv.get_data(as_text=True)
+    assert 'You have logged out.' in rv.get_data(as_text=True)
 
     rv = register(client, 'user1', 'pass2', 'pass2')
-    assert constants.TextUserUsernameOccupied in rv.get_data(as_text=True)
+    assert 'The username has been occupied. Please try another one.' in rv.get_data(as_text=True)
 
 
 def test_get_login(client):
@@ -68,19 +65,19 @@ def test_get_login(client):
 
 def test_login(client):
     rv = register(client, 'user1', 'pass1', 'pass1')
-    assert constants.TextUserRegisterSuccess in rv.get_data(as_text=True)
+    assert 'Successfully registered.' in rv.get_data(as_text=True)
 
     rv = logout(client)
-    assert constants.TextUserLogout in rv.get_data(as_text=True)
+    assert 'You have logged out.' in rv.get_data(as_text=True)
 
     rv = login(client, 'user1', 'wrongpassword')
-    assert constants.TextUserWrongPassword in rv.get_data(as_text=True)
+    assert 'Incorrect combination of username and password.' in rv.get_data(as_text=True)
 
     rv = login(client, 'wronguser', 'pass1')
-    assert constants.TextUserWrongPassword in rv.get_data(as_text=True)
+    assert 'Incorrect combination of username and password.' in rv.get_data(as_text=True)
 
     rv = login(client, 'user1', 'pass1')
-    assert constants.TextUserLoginSuccess in rv.get_data(as_text=True)
+    assert 'Successfully logged in.' in rv.get_data(as_text=True)
 
     rv = login(client, 'user1', 'pass1')
-    assert constants.TextUserAlreadyLoggedIn in rv.get_data(as_text=True)
+    assert 'You have already logged in.' in rv.get_data(as_text=True)

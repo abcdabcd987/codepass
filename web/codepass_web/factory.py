@@ -14,10 +14,13 @@ def create_app(config=None):
     app.jinja_env.auto_reload = bool(app.debug)
     app.config.update(config or {})
 
+    app.jinja_env.filters['markdown'] = views.markdown_to_html5
+
     db.init_app(app)
     csrf = CSRFProtect(app)
 
     app.register_blueprint(views.homepage)
+    app.register_blueprint(views.problem, url_prefix='/problem')
     app.register_blueprint(views.user, url_prefix='/user')
 
     @app.cli.command()

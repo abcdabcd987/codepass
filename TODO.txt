@@ -14,6 +14,8 @@ TODO
 - show scores for acm practice might have negative training effects
 - additional files for testcases
 - permission control
+    - user privileges
+    - permission check
 - FPS format
 - CSRF
 - options to not to use email to login
@@ -22,6 +24,8 @@ TODO
 - user register email verification
 - problem archive metadata text search index
 - limit login frequency
+- markdown editor
+- multiple sample data
 - event log
     - user
         - login
