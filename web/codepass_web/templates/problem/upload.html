@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Upload Testcases of {{ archive.json.title }}{% endblock %}
+{% block content %}
+  <h1>[{{ problem.id }}]{{ archive.json.title }} <small>Upload Testcases</small></h1>
+  <hr>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('.post_upload', problem_id=problem.id) }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group row">
+      <label for="file" class="col-sm-2 col-form-label">Select File</label>
+      <div class="col-sm-7"><input type="file" id="file" name="file" class="form-control-file"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+{% endblock %}

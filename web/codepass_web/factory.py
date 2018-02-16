@@ -26,5 +26,6 @@ def create_app(config=None):
     @app.cli.command()
     def initdb():
         db.create_all()
+        db.engine.execute("ALTER TABLE problems AUTO_INCREMENT = 1000")
 
     return app

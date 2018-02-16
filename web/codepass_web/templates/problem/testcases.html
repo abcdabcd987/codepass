@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}Configure Testcases of [{{ problem.id }}]{{ archive.json.title }}{% endblock %}
+{% block content %}
+  <h1>[{{ problem.id }}]{{ archive.json.title }}</h1>
+  <h2>Configure Testcases</h2>
+  <form method="post">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Standard Input</th>
+          <th>Standard Output</th>
+          <th>Time Limit (ms)</th>
+          <th>Memory Limit (MB)</th>
+          <th>Score</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </form>
+  <h2>All Files</h2>
+  <ul id="all-files">
+  </ul>
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='config_testcases.js') }}"></script>
+  <script>
+  let files = {
+  {% for k, v in archive.json.files.items() %}
+      '{{ k }}': '{{ v }}',
+  {%- endfor %}
+  };
+  config_testcases(files);
+  </script>
+{% endblock %}

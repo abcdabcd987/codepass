@@ -1,5 +1,8 @@
 import functools
 import json
+import os
+import random
+import string
 import markdown
 
 from datetime import datetime
@@ -9,6 +12,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, InputRequired, EqualTo
 from sqlalchemy.exc import IntegrityError
+from werkzeug.utils import secure_filename
 from ..models import *
 from .. import constants
 
@@ -34,3 +38,7 @@ def markdown_to_html5(text):
     html = markdown.markdown(text, output_format='html5')
     # html = bleach.clean(html)  # FIXME
     return html
+
+
+def random_string(length):
+    return ''.join(random.sample(string.ascii_uppercase + string.digits, k=length))

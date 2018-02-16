@@ -2,14 +2,15 @@ import os
 import pytz
 import datetime
 
-
 class Settings:
     BASEDIR = os.path.realpath(os.path.dirname(__file__))
     WEBSITE_NAME = 'Online Judge'
-    # SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:mypassword@localhost/dike-oj'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/dike-oj.db'
+    # SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:mypassword@localhost/codepass'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/codepass.db'
     SECRET_KEY = 'you can copy from: python -c "print(repr(__import__(\"os\").urandom(30)))"'
     WEBROOT = ''
+    TMP_UPLOAD_DIR = 'data/tmp_upload'
+    TESTCASES_DIR = 'data/testcases'
 
     WEB = {
         'PROBLEM_FORMAT': [

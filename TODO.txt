@@ -26,6 +26,14 @@ TODO
 - limit login frequency
 - markdown editor
 - multiple sample data
+- upload testcase
+    - tus.io
+    - upload multiple files
+    - upload archive files
+        - format: zip, rar, 7z, tar, tar.gz, tar.bz2
+        - correct encoding
+    - expiration
+    - auto select files
 - event log
     - user
         - login

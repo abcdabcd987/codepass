@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Select Uploaded Files{% endblock %}
+{% block content %}
+  <h1>Select Uploaded Files</h1>
+  {% for upload in uploads %}
+    <hr>
+    <h2>[{{ upload.problem.id }}]{{ upload.problem.title }}
+      <small><code>{{ upload.filename }}</code></small>
+    </h2>
+    <form method="post" action="{{ url_for('.post_select_files', key=upload.key) }}">
+      {{ form.hidden_tag() }}
+      {% for file in upload.files %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" checked id="{{ upload.key }}-{{ file }}" name="{{ file }}">
+          <label class="form-check-label monospace" for="{{ upload.key }}-{{ file }}">{{ file }}</label>
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Add Files</button>
+    </form>
+  {% endfor %}
+{% endblock %}

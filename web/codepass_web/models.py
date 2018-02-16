@@ -51,18 +51,6 @@ class ProblemArchive(db.Model):
     created_at = db.Column(db.TIMESTAMP, nullable=False)
 
 
-class Testcase(db.Model):
-    __tablename__ = 'testcases'
-    id = db.Column(db.Integer, primary_key=True)
-    problem_id = db.Column(db.Integer, db.ForeignKey('problems.id'), nullable=False, index=True)
-    time_limit = db.Column(db.Integer, nullable=False)
-    memory_limit = db.Column(db.Integer, nullable=False)
-    score = db.Column(db.Integer, nullable=False)
-    notes = db.Column(db.Text)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.TIMESTAMP, nullable=False)
-
-
 class Checker(db.Model):
     __tablename__ = 'checkers'
     id = db.Column(db.Integer, primary_key=True)

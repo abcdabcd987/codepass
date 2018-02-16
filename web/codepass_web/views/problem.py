@@ -1,6 +1,24 @@
+import hashlib
+import shutil
+import subprocess
 from .common import *
 
 mod = Blueprint('problem', __name__)
+
+
+def file_sha1(filename):
+    with open(filename, 'rb') as f:
+        sha1 = hashlib.sha1()
+        while True:
+            data = f.read(65536)
+            if not data:
+                break
+            sha1.update(data)
+    return sha1.hexdigest()
+
+
+def testcase_dir(sha1):
+    return '{}/{}/{}/{}/{}'.format(sha1[0:2], sha1[2:4], sha1[4:6], sha1[6:8], sha1)
 
 
 @mod.route('/<int:problem_id>')
@@ -11,6 +29,7 @@ def get_problem(problem_id):
             break
         archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
         return render_template('problem/show.html', problem=problem, archive=archive)
+    abort(404)
 
 
 @mod.route('/add')
@@ -76,3 +95,126 @@ def post_save():
         flash('The problem has been added.', 'success')
         return redirect(url_for('.get_problem', problem_id=problem.id))
     return render_template('problem/add.html', form=form)
+
+
+@mod.route('/<int:problem_id>/upload')
+@login_required
+def get_upload(problem_id):
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+    if not problem or not problem.archive_id:
+        abort(404)
+    archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+    form = FlaskForm()
+    return render_template('problem/upload.html', form=form, problem=problem, archive=archive)
+
+
+@mod.route('/<int:problem_id>/upload', methods=['POST'])
+@login_required
+def post_upload(problem_id):
+    form = FlaskForm()
+    assert form.validate()
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+    if not problem or not problem.archive_id:
+        abort(404)
+
+    file = request.files.get('file', None)
+    if not file or not file.filename:
+        flash('No file uploaded', 'danger')
+        return redirect(url_for('.get_upload', problem_id=problem_id))
+    filename = secure_filename(file.filename)
+    base, ext = os.path.splitext(filename)
+    filepath = os.path.join(current_app.config['TMP_UPLOAD_DIR'], random_string(32)) + ext
+    dirname = os.path.join(current_app.config['TMP_UPLOAD_DIR'], random_string(32))
+    dst = os.path.join(dirname, base)
+    file.save(filepath)
+
+    os.makedirs(dst, exist_ok=True)
+    p = subprocess.run(['unzip', '-o', '-d', dst, filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if os.path.exists(filepath):
+        os.unlink(filepath)
+    if p.returncode:
+        shutil.rmtree(dirname, ignore_errors=True)
+        msg = 'Failed to extract the archive. <pre>STDOUT:\n{}\nSTDERR:\n{}</pre>'.format(
+            str(p.stdout, 'utf-8'), str(p.stderr, 'utf-8'))
+        flash(msg, 'danger')
+        return redirect(url_for('.get_upload', problem_id=problem_id))
+
+    if 'upload_testcase' not in session:
+        session['upload_testcase'] = {}
+    key = random_string(32)
+    session['upload_testcase'][key] = {'problem_id': problem_id, 'dirname': dirname, 'filename': filename}
+    flash('Successfully uploaded.', 'success')
+    return redirect(url_for('.get_select_files'))
+
+
+@mod.route('/select_files')
+@login_required
+def get_select_files():
+    uploads = []
+    if 'upload_testcase' in session:
+        for key, upload in session['upload_testcase'].items():
+            problem_id = upload['problem_id']
+            dirname = upload['dirname']
+            l = len(dirname) + 1
+            files = [os.path.join(root[l:], file) for root, dir, files in os.walk(dirname) for file in files]
+            files.sort()
+            problem = db.session.query(Problem).filter(Problem.id == problem_id).one()
+            uploads.append({'problem': problem, 'files': files, 'key': key, 'filename': upload['filename']})
+    form = FlaskForm()
+    return render_template('problem/select_files.html', uploads=uploads, form=form)
+
+
+@mod.route('/select_files/<key>', methods=['POST'])
+@login_required
+def post_select_files(key):
+    form = FlaskForm()
+    assert form.validate()
+    uploads = session.get('upload_testcase', None)
+    if not uploads or key not in uploads:
+        flash('Cannot find the uploaded files.', 'danger')
+        return redirect(url_for('homepage.homepage'))
+
+    problem_id = uploads[key]['problem_id']
+    dirname = uploads[key]['dirname']
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).one()
+    archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+    db.make_transient(archive)
+    archive.id = None
+    if 'files' not in archive.json:
+        archive.json['files'] = {}
+
+    for filename, checkbox in request.form.items():
+        if checkbox != 'on':
+            continue
+        src_path = os.path.join(dirname, filename)
+        if not os.path.exists(src_path):
+            continue
+        sha1 = file_sha1(src_path)
+        dst_path = os.path.join(current_app.config['TESTCASES_DIR'], testcase_dir(sha1))
+        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+        os.rename(src_path, dst_path)
+        archive.json['files'][filename] = sha1
+
+    db.session.add(archive)
+    db.session.commit()
+    problem.archive_id = archive.id
+    db.session.add(problem)
+    db.session.commit()
+
+    shutil.rmtree(dirname, ignore_errors=True)
+    del uploads[key]
+    flash('Successfully added files.', 'success')
+    return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+
+
+@mod.route('/<int:problem_id>/testcases')
+@login_required
+def get_edit_testcases(problem_id):
+    while True:
+        problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+        if not problem or not problem.archive_id:
+            break
+        archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+        form = FlaskForm()
+        return render_template('problem/testcases.html', form=form, problem=problem, archive=archive)
+    abort(404)
