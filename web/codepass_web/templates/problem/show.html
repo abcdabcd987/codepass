@@ -20,5 +20,8 @@
 {% endmacro %}
 {% block content %}
   <pre>{{ archive.json }}</pre>
+  <a href="{{ url_for('.get_upload', problem_id=problem.id) }}">Upload Testcases</a>,
+  <a href="{{ url_for('.get_edit_testcases', problem_id=problem.id) }}">Edit Testcases</a>
+  <hr>
   {{ render_fields(config.WEB.PROBLEM_FORMAT, archive.json) }}
 {% endblock %}

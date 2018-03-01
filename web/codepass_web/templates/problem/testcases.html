@@ -3,34 +3,53 @@
 {% block content %}
   <h1>[{{ problem.id }}]{{ archive.json.title }}</h1>
   <h2>Configure Testcases</h2>
-  <form method="post">
+  <table class="table table-sm table-striped">
+    <thead>
+    <tr>
+      <th>Standard Input</th>
+      <th>Standard Output</th>
+      <th>Time Limit (ms)</th>
+      <th>Memory Limit (MB)</th>
+      <th>Score</th>
+    </tr>
+    </thead>
+    <tbody id="testcases">
+    </tbody>
+  </table>
+  <form method="post" action="{{ url_for('.post_testcase_config', problem_id=problem.id) }}">
+    {{ form.hidden_tag() }}
+    <textarea class="form-control monospace" rows="13" name="config" id="testcase-config"
+              placeholder="For Example,&#10;1.in|1.out|1000|256|10&#10;2.in|2.out|1000|256|10&#10;...">{{ config }}</textarea>
+    <button type="button" class="btn btn-secondary" id="auto-fill">Auto Fill</button>
+    <button type="submit" class="btn btn-primary">Save Testcases</button>
+  </form>
+
+  <hr>
+  <h2>All Files</h2>
+  <form method="post" action="{{ url_for('.post_modify_files', problem_id=problem.id) }}">
+    {{ form.hidden_tag() }}
     <table class="table">
       <thead>
-        <tr>
-          <th>Standard Input</th>
-          <th>Standard Output</th>
-          <th>Time Limit (ms)</th>
-          <th>Memory Limit (MB)</th>
-          <th>Score</th>
-          <th></th>
-        </tr>
+      <tr>
+        <th>Delete</th>
+        <th>Rename</th>
+        <th>Updated At</th>
+      </tr>
       </thead>
-      <tbody>
+      <tbody id="all-files">
       </tbody>
     </table>
+    <button type="submit" class="btn btn-primary">Delete/Rename</button>
   </form>
-  <h2>All Files</h2>
-  <ul id="all-files">
-  </ul>
 {% endblock %}
 {% block scripts %}
   <script src="{{ url_for('static', filename='config_testcases.js') }}"></script>
   <script>
-  let files = {
-  {% for k, v in archive.json.files.items() %}
-      '{{ k }}': '{{ v }}',
-  {%- endfor %}
-  };
-  config_testcases(files);
+      let files = {
+          {% for k, v in archive.json.files.items() %}
+              '{{ k }}': {sha1: '{{ v.sha1 }}', updated_at: {{ v.updated_at }}},
+          {%- endfor %}
+      };
+      config_testcases(files);
   </script>
 {% endblock %}

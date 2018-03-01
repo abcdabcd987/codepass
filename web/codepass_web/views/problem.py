@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import shutil
 import subprocess
@@ -193,7 +194,10 @@ def post_select_files(key):
         dst_path = os.path.join(current_app.config['TESTCASES_DIR'], testcase_dir(sha1))
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
         os.rename(src_path, dst_path)
-        archive.json['files'][filename] = sha1
+        archive.json['files'][filename] = dict(
+            sha1=sha1,
+            updated_at=datetime.utcnow().timestamp()
+        )
 
     db.session.add(archive)
     db.session.commit()
@@ -207,14 +211,132 @@ def post_select_files(key):
     return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
 
 
+@mod.route('/<int:problem_id>/modify_files', methods=['POST'])
+@login_required
+def post_modify_files(problem_id):
+    form = FlaskForm()
+    assert form.validate()
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+    if not problem or not problem.archive_id:
+        abort(404)
+    archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+    db.make_transient(archive)
+    archive.id = None
+
+    new_files = archive.json['files']
+    old_files = copy.copy(new_files)
+    for name, value in request.form.items():
+        if not name.startswith('rename-'):
+            continue
+        old_name = name[len('rename-'):]
+        if old_name not in old_files:
+            flash('There is no file called <code>{}</code>.'.format(old_name), 'danger')
+            return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+        del new_files[old_name]
+        new_files[value] = old_files[old_name]
+    for name, value in request.form.items():
+        if not name.startswith('delete-'):
+            continue
+        new_name = name[len('delete-'):]
+        if new_name not in new_files:
+            flash('There is no file called <code>{}</code>.'.format(new_name), 'danger')
+            return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+        del new_files[new_name]
+
+    db.session.add(archive)
+    db.session.commit()
+    problem.archive_id = archive.id
+    db.session.add(problem)
+    db.session.commit()
+
+    flash('Successfully updated files.', 'success')
+    return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+
+
+def testcase_config_do_line(cols, files):
+    if len(cols) <= 0:
+        return {'err': 'Standard Input is missing.'}
+    stdin = cols[0].strip()
+    if stdin not in files:
+        return {'err': 'There is no file named <code>{}</code>.'.format(stdin)}
+
+    if len(cols) <= 1:
+        return {'err': 'Standard Output is missing.'}
+    stdout = cols[1].strip()
+    if stdout not in files:
+        return {'err': 'There is no file named <code>{}</code>.'.format(stdout)}
+
+    if len(cols) <= 2:
+        return {'err': 'Time Limit (ms) is missing.'}
+    time = cols[2].strip()
+    try:
+        time = int(time)
+    except ValueError:
+        return {'err': '<code>{}</code> is not an integer.'.format(time)}
+
+    if len(cols) <= 3:
+        return {'err': 'Memory Limit (MB) is missing.'}
+    mem = cols[3].strip()
+    try:
+        mem = int(mem)
+    except ValueError:
+        return {'err': '<code>{}</code> is not an integer.'.format(mem)}
+
+    if len(cols) <= 4:
+        return {'err': 'Score is missing.'}
+    score = cols[4].strip()
+    try:
+        score = int(score)
+    except ValueError:
+        return {'err': '<code>{}</code> is not an integer.'.format(score)}
+
+    return {'res': dict(stdin=stdin, stdout=stdout, time=time, mem=mem, score=score)}
+
+
+@mod.route('/<int:problem_id>/testcase_config', methods=['POST'])
+@login_required
+def post_testcase_config(problem_id):
+    form = FlaskForm()
+    assert form.validate()
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+    if not problem or not problem.archive_id:
+        abort(404)
+
+    archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+    db.make_transient(archive)
+    archive.id = None
+
+    config = []
+    for i, line in enumerate(request.form.get('config', '').splitlines(), start=1):
+        ret = testcase_config_do_line(line.split('|'), archive.json['files'])
+        if 'err' in ret:
+            flash('Line {}: {}'.format(i, ret['err']), 'danger')
+            return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+        config.append(ret['res'])
+    archive.json['testcases'] = config
+
+    db.session.add(archive)
+    db.session.commit()
+    problem.archive_id = archive.id
+    db.session.add(problem)
+    db.session.commit()
+
+    flash('Successfully updated testcases.', 'success')
+    return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
+
+
 @mod.route('/<int:problem_id>/testcases')
 @login_required
 def get_edit_testcases(problem_id):
-    while True:
-        problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
-        if not problem or not problem.archive_id:
-            break
-        archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
-        form = FlaskForm()
-        return render_template('problem/testcases.html', form=form, problem=problem, archive=archive)
-    abort(404)
+    problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
+    if not problem or not problem.archive_id:
+        abort(404)
+    archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
+
+    config = ''
+    if 'testcases' in archive.json:
+        for testcase in archive.json['testcases']:
+            config += '{t[stdin]}|{t[stdout]}|{t[time]}|{t[mem]}|{t[score]}\n'.format(t=testcase)
+
+    form = FlaskForm()
+    return render_template('problem/testcases.html', form=form, problem=problem, archive=archive, config=config)
