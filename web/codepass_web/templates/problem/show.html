@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
-{% block title %}{{ archive.json.title }}{% endblock %}
-{% macro render_fields(fields, json) %}
-  {% for field in fields if field.key in json %}
-    {% set value = json[field.key] %}
+{% block title %}{{ archive.problem_yaml.title }}{% endblock %}
+{% macro render_fields(fields, problem_yaml) %}
+  {% for field in fields if field.key in problem_yaml %}
+    {% set value = problem_yaml[field.key] %}
     {% if field.type == 'combo' %}
       {{ render_fields(field.content, value) }}
     {% elif field.key == 'title' %}
@@ -19,9 +19,10 @@
   {% endfor %}
 {% endmacro %}
 {% block content %}
-  <pre>{{ archive.json }}</pre>
+  <pre>{{ archive.problem_yaml }}</pre>
+  <pre>{{ archive.config_yaml }}</pre>
   <a href="{{ url_for('.get_upload', problem_id=problem.id) }}">Upload Testcases</a>,
   <a href="{{ url_for('.get_edit_testcases', problem_id=problem.id) }}">Edit Testcases</a>
   <hr>
-  {{ render_fields(config.WEB.PROBLEM_FORMAT, archive.json) }}
+  {{ render_fields(config.WEB.PROBLEM_FORMAT, archive.problem_yaml) }}
 {% endblock %}

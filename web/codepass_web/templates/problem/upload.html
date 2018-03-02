@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
-{% block title %}Upload Testcases of {{ archive.json.title }}{% endblock %}
+{% block title %}Upload Testcases of {{ archive.problem_yaml.title }}{% endblock %}
 {% block content %}
-  <h1>[{{ problem.id }}]{{ archive.json.title }} <small>Upload Testcases</small></h1>
+  <h1>[{{ problem.id }}]{{ archive.problem_yaml.title }} <small>Upload Testcases</small></h1>
   <hr>
   <form method="post" enctype="multipart/form-data" action="{{ url_for('.post_upload', problem_id=problem.id) }}">
     {{ form.hidden_tag() }}

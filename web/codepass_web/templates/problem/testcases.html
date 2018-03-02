@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
-{% block title %}Configure Testcases of [{{ problem.id }}]{{ archive.json.title }}{% endblock %}
+{% block title %}Configure Testcases of [{{ problem.id }}]{{ archive.problem_yaml.title }}{% endblock %}
 {% block content %}
-  <h1>[{{ problem.id }}]{{ archive.json.title }}</h1>
+  <h1>[{{ problem.id }}]{{ archive.problem_yaml.title }}</h1>
   <h2>Configure Testcases</h2>
   <table class="table table-sm table-striped">
     <thead>
@@ -19,7 +19,7 @@
   <form method="post" action="{{ url_for('.post_testcase_config', problem_id=problem.id) }}">
     {{ form.hidden_tag() }}
     <textarea class="form-control monospace" rows="13" name="config" id="testcase-config"
-              placeholder="For Example,&#10;1.in|1.out|1000|256|10&#10;2.in|2.out|1000|256|10&#10;...">{{ config }}</textarea>
+              placeholder="For Example,&#10;1.in|1.out|1000|256|10&#10;2.in|2.out|1000|256|10&#10;...">{{ testcase_config }}</textarea>
     <button type="button" class="btn btn-secondary" id="auto-fill">Auto Fill</button>
     <button type="submit" class="btn btn-primary">Save Testcases</button>
   </form>
@@ -28,7 +28,7 @@
   <h2>All Files</h2>
   <form method="post" action="{{ url_for('.post_modify_files', problem_id=problem.id) }}">
     {{ form.hidden_tag() }}
-    <table class="table">
+    <table class="table table-sm">
       <thead>
       <tr>
         <th>Delete</th>
@@ -46,10 +46,10 @@
   <script src="{{ url_for('static', filename='config_testcases.js') }}"></script>
   <script>
       let files = {
-          {% for k, v in archive.json.files.items() %}
+          {% for k, v in archive.config_yaml.files.items() %}
               '{{ k }}': {sha1: '{{ v.sha1 }}', updated_at: {{ v.updated_at }}},
           {%- endfor %}
       };
-      config_testcases(files);
+      config_testcases(files, {{ archive.problem_yaml.time_limit }}, {{ archive.problem_yaml.memory_limit }});
   </script>
 {% endblock %}

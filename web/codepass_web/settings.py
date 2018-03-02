@@ -4,13 +4,15 @@ import datetime
 
 class Settings:
     BASEDIR = os.path.realpath(os.path.dirname(__file__))
+    DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(BASEDIR)), 'data')
+
     WEBSITE_NAME = 'Online Judge'
     # SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:mypassword@localhost/codepass'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/codepass.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'codepass.db')
     SECRET_KEY = 'you can copy from: python -c "print(repr(__import__(\"os\").urandom(30)))"'
     WEBROOT = ''
-    TMP_UPLOAD_DIR = 'data/tmp_upload'
-    TESTCASES_DIR = 'data/testcases'
+    TMP_UPLOAD_DIR = os.path.join(DATA_DIR, 'tmp_upload')
+    TESTCASES_DIR = os.path.join(DATA_DIR, 'testcases')
 
     WEB = {
         'PROBLEM_FORMAT': [

@@ -1,4 +1,4 @@
-web/codepass_web/data/
+data/
 .coverage
 
 # Created by https://www.gitignore.io/api/vim,macos,python,intellij+all

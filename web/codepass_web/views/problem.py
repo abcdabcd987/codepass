@@ -22,7 +22,7 @@ def testcase_dir(sha1):
     return '{}/{}/{}/{}/{}'.format(sha1[0:2], sha1[2:4], sha1[4:6], sha1[6:8], sha1)
 
 
-@mod.route('/<int:problem_id>')
+@mod.route('/<int:problem_id>/')
 def get_problem(problem_id):
     while True:
         problem = db.session.query(Problem).filter(Problem.id == problem_id).first()
@@ -84,7 +84,8 @@ def post_save():
         db.session.commit()
 
         archive = ProblemArchive(problem_id=problem.id,
-                                 json=config,
+                                 problem_yaml=config,
+                                 config_yaml={},
                                  created_by=user.id,
                                  created_at=now)
         db.session.add(archive)
@@ -181,8 +182,8 @@ def post_select_files(key):
     archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
     db.make_transient(archive)
     archive.id = None
-    if 'files' not in archive.json:
-        archive.json['files'] = {}
+    if 'files' not in archive.config_yaml:
+        archive.config_yaml['files'] = {}
 
     for filename, checkbox in request.form.items():
         if checkbox != 'on':
@@ -194,7 +195,7 @@ def post_select_files(key):
         dst_path = os.path.join(current_app.config['TESTCASES_DIR'], testcase_dir(sha1))
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
         os.rename(src_path, dst_path)
-        archive.json['files'][filename] = dict(
+        archive.config_yaml['files'][filename] = dict(
             sha1=sha1,
             updated_at=datetime.utcnow().timestamp()
         )
@@ -223,7 +224,7 @@ def post_modify_files(problem_id):
     db.make_transient(archive)
     archive.id = None
 
-    new_files = archive.json['files']
+    new_files = archive.config_yaml['files']
     old_files = copy.copy(new_files)
     for name, value in request.form.items():
         if not name.startswith('rename-'):
@@ -308,12 +309,12 @@ def post_testcase_config(problem_id):
 
     config = []
     for i, line in enumerate(request.form.get('config', '').splitlines(), start=1):
-        ret = testcase_config_do_line(line.split('|'), archive.json['files'])
+        ret = testcase_config_do_line(line.split('|'), archive.config_yaml['files'])
         if 'err' in ret:
             flash('Line {}: {}'.format(i, ret['err']), 'danger')
             return redirect(url_for('.get_edit_testcases', problem_id=problem_id))
         config.append(ret['res'])
-    archive.json['testcases'] = config
+    archive.config_yaml['testcases'] = config
 
     db.session.add(archive)
     db.session.commit()
@@ -334,9 +335,10 @@ def get_edit_testcases(problem_id):
     archive = db.session.query(ProblemArchive).filter(ProblemArchive.id == problem.archive_id).one()
 
     config = ''
-    if 'testcases' in archive.json:
-        for testcase in archive.json['testcases']:
+    if 'testcases' in archive.config_yaml:
+        for testcase in archive.config_yaml['testcases']:
             config += '{t[stdin]}|{t[stdout]}|{t[time]}|{t[mem]}|{t[score]}\n'.format(t=testcase)
 
     form = FlaskForm()
-    return render_template('problem/testcases.html', form=form, problem=problem, archive=archive, config=config)
+    return render_template('problem/testcases.html', form=form, problem=problem, archive=archive,
+                           testcase_config=config)
