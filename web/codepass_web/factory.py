@@ -22,6 +22,8 @@ def create_app(config=None):
     app.register_blueprint(views.homepage)
     app.register_blueprint(views.problem, url_prefix='/problem')
     app.register_blueprint(views.user, url_prefix='/user')
+    app.register_blueprint(views.admin, url_prefix='/admin')
+    app.register_blueprint(views.submission)
 
     @app.cli.command()
     def initdb():

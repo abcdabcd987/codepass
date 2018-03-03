@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block title %}Add a Language{% endblock %}
+{% block content %}
+<h1>Add a Language</h1>
+<hr>
+<form method="post">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.name) }}
+  {{ render_field(form.time_scale) }}
+  {{ render_field(form.source_filename, class_='monospace') }}
+  {{ render_field(form.compile_command, class_='monospace', rows=3) }}
+  {{ render_field(form.execute_command, class_='monospace', rows=3) }}
+  {{ render_field(form.version_command, class_='monospace', rows=3) }}
+  <button type="submit" class="btn btn-primary">Add</button>
+</form>
+{% endblock %}

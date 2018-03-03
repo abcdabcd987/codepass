@@ -25,4 +25,6 @@
   <a href="{{ url_for('.get_edit_testcases', problem_id=problem.id) }}">Edit Testcases</a>
   <hr>
   {{ render_fields(config.WEB.PROBLEM_FORMAT, archive.problem_yaml) }}
+  <hr>
+  <a class="btn btn-primary" href="{{ url_for('submission.get_submit', problem_id=problem.id) }}">Submit</a>
 {% endblock %}

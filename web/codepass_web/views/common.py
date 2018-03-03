@@ -9,8 +9,8 @@ from datetime import datetime
 from flask import Blueprint, request, redirect, session, url_for, flash, render_template, jsonify, abort, Response, \
     current_app
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired, InputRequired, EqualTo
+from wtforms import *
+from wtforms.validators import *
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 from ..models import *

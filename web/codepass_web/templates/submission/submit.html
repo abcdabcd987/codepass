@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Submit the Solution{% endblock %}
+{% block content %}
+<h1>Submit the Solution</h1>
+<hr>
+<form method="post" action="{{ url_for('.post_submit') }}">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.problem_id) }}
+  {{ render_field(form.language_id) }}
+  {{ render_field(form.code, class_='monospace', rows=10) }}
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
